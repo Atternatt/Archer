@@ -7,24 +7,17 @@ import com.m2f.library.failure.Failure
 import com.m2f.library.operation.*
 import com.m2f.library.query.KeyQuery
 
-class CacheRepository<K, Q: KeyQuery<K, A>, A>(
-    private val mainDataSource: DataSource<Failure, Q, A>,
-    private val cacheDataSource: DataSource<Failure, Q, A>
-) : Repository<Failure, Q, A> {
-    override tailrec suspend fun invoke(o: Operation): suspend (Q) -> Either<Failure, Option<A>> {
+class CacheRepository<K, A>(
+    private val mainDataSource: DataSource<Failure, KeyQuery<K, A>, A>,
+    private val cacheDataSource: DataSource<Failure, KeyQuery<K, A>, A>
+) : Repository<Failure, KeyQuery<K, A>, A> {
+    override tailrec suspend fun invoke(o: Operation): suspend (KeyQuery<K, A>) -> Either<Failure, Option<A>> {
         return when (o) {
-            DefaultOperation -> invoke(MainOperation)
-            CacheOperation -> cacheDataSource::invoke
-            MainOperation -> mainDataSource::invoke
-            CacheSyncOperation -> {
-                { q: KeyQuery<K, A> -> when(q) {
-                    is KeyQuery.Delete -> TODO()
-                    is KeyQuery.Get -> TODO()
-                    is KeyQuery.Put -> TODO()
-                } }
-            }
-            MainSyncOperation -> TODO()
+            is DefaultOperation -> invoke(CacheSyncOperation)
+            is CacheOperation -> cacheDataSource::invoke
+            is MainOperation -> mainDataSource::invoke
+            is CacheSyncOperation -> cacheDataSource.fallback(mainDataSource, o)
+            is MainSyncOperation -> mainDataSource.fallback(cacheDataSource, o)
         }
     }
-
 }

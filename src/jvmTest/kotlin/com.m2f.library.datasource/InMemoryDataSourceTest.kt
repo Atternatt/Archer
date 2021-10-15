@@ -25,7 +25,7 @@ class InMemoryDataSourceTest : FunSpec() {
             val getKeys: Arb<KeyQuery<String, Int>> = Arb.keyQuery(Arb.string(), Arb.int())
 
             forAll(getKeys) { query ->
-                dataSource(query).run {
+                dataSource.invoke(query).run {
                     this is Either.Right ||
                     this is Either.Left
                 }
@@ -37,7 +37,7 @@ class InMemoryDataSourceTest : FunSpec() {
             val queries = Arb.putKeyQuery(Arb.string(), Arb.int())
 
             checkAll(queries) { putQuery->
-                dataSource(putQuery) shouldBe Either.Right(putQuery.value.some())
+                dataSource.invoke(putQuery) shouldBe Either.Right(putQuery.value.some())
             }
         }
 
@@ -47,7 +47,7 @@ class InMemoryDataSourceTest : FunSpec() {
             val queries = Arb.bind(Arb.string(), Arb.int()) { k, v -> KeyQuery.Get<String, Int>(k) to KeyQuery.Put(k, v)}
 
             checkAll(queries) { (getQuery, putQuery) ->
-                dataSource(putQuery) shouldBe dataSource(getQuery)
+                dataSource.invoke(putQuery) shouldBe dataSource.invoke(getQuery)
             }
         }
 
@@ -56,7 +56,7 @@ class InMemoryDataSourceTest : FunSpec() {
             val queries = Arb.getKeyQuery<String, Int>(Arb.string())
 
             checkAll(queries) { getQuery ->
-                    dataSource(getQuery) shouldBe Either.Left(DataNotFound)
+                    dataSource.invoke(getQuery) shouldBe Either.Left(DataNotFound)
             }
         }
 
@@ -65,7 +65,7 @@ class InMemoryDataSourceTest : FunSpec() {
             val queries = Arb.deleteKeyQuery<String, Int>(Arb.string())
 
             forAll(queries) { query ->
-                dataSource(query) is Either.Right
+                dataSource.invoke(query) is Either.Right
             }
         }
 
@@ -74,7 +74,7 @@ class InMemoryDataSourceTest : FunSpec() {
             val queries = Arb.deleteKeyQuery<String, Int>(Arb.string())
 
             checkAll(queries) { query ->
-                dataSource(query) shouldBe  Either.Right(None)
+                dataSource.invoke(query) shouldBe  Either.Right(None)
             }
         }
 
@@ -84,9 +84,9 @@ class InMemoryDataSourceTest : FunSpec() {
             val queries = Arb.bind(Arb.string(), Arb.int()) { k, v -> Triple(KeyQuery.Get<String, Int>(k), KeyQuery.Put(k, v), KeyQuery.Delete<String, Int>(k))}
 
             checkAll(queries) { (get, put, delete) ->
-                dataSource(put)
-                dataSource(delete)
-                dataSource(get) shouldBe Either.Left(DataNotFound)
+                dataSource.invoke(put)
+                dataSource.invoke(delete)
+                dataSource.invoke(get) shouldBe Either.Left(DataNotFound)
             }
 
         }

@@ -7,7 +7,6 @@ import arrow.core.computations.either
 import arrow.core.some
 import com.m2f.library.failure.DataNotFound
 import com.m2f.library.failure.Failure
-import com.m2f.library.failure.QueryNotSupported
 import com.m2f.library.query.KeyQuery
 
 class InMemoryDataSource<K, A>(initialValues: Map<K, A> = emptyMap()) : DataSource<Failure, KeyQuery<K, A>, A> {

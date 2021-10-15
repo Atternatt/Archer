@@ -26,9 +26,6 @@ kotlin {
             browser()
             nodejs()
         }
-        linuxX64()
-        macosX64()
-        mingwX64()
     }
 
     targets.all {
@@ -58,6 +55,13 @@ kotlin {
                 implementation("io.kotest:kotest-framework-engine:5.0.0.M1")
                 implementation("io.kotest:kotest-assertions-core:5.0.0.M2")
                 implementation("io.mockk:mockk-common:1.12.0")
+                implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.31")
+            }
+        }
+
+        val jsTest by getting {
+            dependencies {
+                implementation("io.kotest:kotest-framework-engine:5.0.0.M2")
             }
         }
 
@@ -70,7 +74,7 @@ kotlin {
 
         val jvmTest by getting {
             dependencies {
-                implementation("org.jetbrains.kotlin:kotlin-test-junit")
+                implementation("io.kotest:kotest-runner-junit5:5.0.0.M2")
             }
         }
     }
@@ -82,7 +86,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
     }
 }
 
-tasks.named<Test>("jvmTest") {
+tasks.withType<Test> {
     useJUnitPlatform()
     filter {
         isFailOnNoMatchingTests = false
